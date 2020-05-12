@@ -1,0 +1,8 @@
+{
+    "type": "object",
+    "properties": {
+        "datasource": { "type": "string" },
+        "length": { "type": "integer" }
+    },
+    "required": [ "datasource" ]
+}

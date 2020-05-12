@@ -1,0 +1,23 @@
+{
+    "type": "object",
+    "required": ["Rearrangements"],
+    "properties": {
+        "Rearrangements": {
+            "type": "array",
+            "items": [ {
+                "type": "object",
+                "properties": {
+                    "c_call": { "type": ["string", "null"] },
+                    "d_call": { "type": ["string", "null"] },
+                    "j_call": { "type": ["string", "null"] },
+                    "v_call": { "type": ["string", "null"] },
+                    "junction": { "type": "string" },
+                    "junction_aa": { "type": "string" },
+                    "sequence": { "type": "string" },
+                    "sequence_aa": { "type": "string" },
+                    "locus": { "type": "string" }
+                }
+            }]
+        }
+    }
+}
