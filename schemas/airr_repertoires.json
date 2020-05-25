@@ -1,0 +1,20 @@
+{
+    "type": "object",
+    "required": ["Repertoire"],
+    "properties": {
+        "Repertoire": {
+            "type": "array",
+            "items": [ {
+                "type": "object",
+                "properties": {
+                    "repertoire_id": { "type": ["string", "number"] },
+                    "repertoire_name": { "type": ["string", "null"] },
+                    "study": { "type": ["object"] },
+                    "subject": { "type": ["object"] },
+                    "sample": { "type": ["array"] },
+                    "data_processing": { "type": ["array"] }
+                }
+            }]
+        }
+    }
+}
