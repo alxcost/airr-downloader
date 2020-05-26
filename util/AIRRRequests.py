@@ -20,7 +20,7 @@ class AIRRRequests:
                         field filtering should follow the data formats defined
                         by the AIRR standards. More details:
                         https://docs.airr-community.org/en/latest/api/adc_api.html#request-parameters
-        :param access_token: Option Access Token for protected APIs
+        :param access_token: Optional Access Token for protected APIs
 
         :return: Repertoire based schema on success
         """
@@ -29,8 +29,8 @@ class AIRRRequests:
         query = {}
 
         # Quirk #2
-        # The filter behaves differently when filter one parameter and when
-        # filtering multiple.
+        # The filter behaves differently when filtering for one parameter and
+        # when filtering for multiple parameters.
         # We need to check two conditions: if there's only one filter, or if
         # there's multiple. Reason being, some APIs do not support sending
         # a single condition in an array. If they did, we could just use the
@@ -64,7 +64,7 @@ class AIRRRequests:
                     }
                 })
 
-        airr_request = requests.post(url, json=query, headers=header);
+        airr_request = requests.post(url + "/repertoire", json=query, headers=header);
         airr_request.raise_for_status()
         return airr_request.json()
 
@@ -72,25 +72,30 @@ class AIRRRequests:
     def request_rearrangements_by_repertoire_ids(url: str, repertoire_ids: List[int], access_token: str = None):
         """
         :param url: URL corresponding to a AIRR compliant API
-        :param repertoire_ids:
-        :param access_token: Option Access Token for protected APIs
+        :param repertoire_ids: List of repertoire ids to query for
+        :param access_token: Optional Access Token for protected APIs
 
-        :return: Repertoire based schema on success
+        :return: Rearrangement based schema on success
         """
+
+        if not repertoire_ids or not len(repertoire_ids):
+            return False
 
         header = AIRRRequests._build_header(access_token)
 
         query = {
             "filters":{
-                "op":"=",
+                "op": "in",
                 "content": {
                     "field": "repertoire_id",
-                    "value": id_repertoire
+                    "value": repertoire_ids
                 }
-            }
+            },
+            "size": 10,
+            "from": 0
         }
 
-        airr_request = requests.post(url, json=query, headers=header);
+        airr_request = requests.post(url + "/rearrangement", json=query, headers=header);
         airr_request.raise_for_status()
         return airr_request.json()
 

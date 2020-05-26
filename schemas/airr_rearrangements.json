@@ -1,8 +1,8 @@
 {
     "type": "object",
-    "required": ["Rearrangements"],
+    "required": ["Rearrangement"],
     "properties": {
-        "Rearrangements": {
+        "Rearrangement": {
             "type": "array",
             "items": [ {
                 "type": "object",
@@ -11,11 +11,11 @@
                     "d_call": { "type": ["string", "null"] },
                     "j_call": { "type": ["string", "null"] },
                     "v_call": { "type": ["string", "null"] },
-                    "junction": { "type": "string" },
-                    "junction_aa": { "type": "string" },
-                    "sequence": { "type": "string" },
-                    "sequence_aa": { "type": "string" },
-                    "locus": { "type": "string" }
+                    "junction": { "type": ["string"] },
+                    "junction_aa": { "type": ["string", "null"] },
+                    "sequence": { "type": ["string"] },
+                    "sequence_aa": { "type": ["string", "null"] },
+                    "locus": { "type": ["string"] }
                 }
             }]
         }

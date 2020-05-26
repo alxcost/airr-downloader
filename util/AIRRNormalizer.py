@@ -7,7 +7,7 @@ class AIRRNormalizer:
         for fd in filter_disease:
             normalized_diseases.append(("subject.diagnosis.disease_diagnosis.value", fd))
 
-        return normalized_diseases
+        return tuple(normalized_diseases)
 
     @staticmethod
     def normalize_repertoires(repertoire_list):
