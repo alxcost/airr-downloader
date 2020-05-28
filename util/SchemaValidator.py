@@ -10,12 +10,12 @@ class SchemaValidator:
         """
         Asserts that a JSON dataset matches a provided valid schema file
 
-        Raises exception to where its original instantiated if json is invalid:
-            - jsonschema.exceptions.ValidationError
-            - jsonschema.exceptions.SchemaError
+        Raises the following exceptions any of the provided JSONs are invalid:
+            - jsonschema.exceptions.SchemaError     -> Invalid JSON Schema
+            - jsonschema.exceptions.ValidationError -> Invalid JSON
 
-        :return True: if validate check passes
-        :returns False: if unable to determine jsonschema file
+        :return True: if validate check passes with no exceptions
+        :returns False: default fail state
         """
 
         with open(schema_filepath) as schema_file:
