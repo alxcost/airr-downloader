@@ -1,4 +1,4 @@
-import requests
+import math, requests
 
 from typing import List, Tuple
 
@@ -77,13 +77,52 @@ class AIRRRequests:
 
         :return: Rearrangement based schema on success
         """
-
         if not repertoire_ids or not len(repertoire_ids):
             return False
 
         header = AIRRRequests._build_header(access_token)
+        query = AIRRRequests._filter_by_repertoire
 
-        query = {
+        airr_request = requests.post(url + "/rearrangement", json=query, headers=header);
+        airr_request.raise_for_status()
+        return airr_request.json()
+
+    @staticmethod
+    def stream_rearrangements_by_repertoire_ids(url: str, repertoire_ids: List[int], access_token: str = None):
+        """
+        :param url: URL corresponding to a AIRR compliant API
+        :param repertoire_ids: List of repertoire ids to query for
+        :param access_token: Optional Access Token for protected APIs
+
+        :return: Response chunk of a Rearrangement based schema, Total length of expected response
+        """
+        if not repertoire_ids or not len(repertoire_ids):
+            return False
+
+        header = AIRRRequests._build_header(access_token)
+        query = AIRRRequests._filter_by_repertoires(repertoire_ids)
+
+        airr_request = requests.post(url + "/rearrangement", json=query, headers=header, stream=True);
+        airr_request.raise_for_status()
+
+        if airr_request.encoding is None:
+            airr_request.encoding = 'utf-8'
+
+        for chunk in airr_request.iter_content(decode_unicode=True, chunk_size=1024 * 16):
+            if chunk:
+                yield chunk
+
+    @staticmethod
+    def sizeof_fmt(num, suffix='B'):
+        magnitude = int(math.floor(math.log(num, 1024)))
+        val = num / math.pow(1024, magnitude)
+        if magnitude > 7:
+            return '{:.1f}{}{}'.format(val, 'Yi', suffix)
+        return '{:3.1f}{}{}'.format(val, ['', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi', 'Ei', 'Zi'][magnitude], suffix)
+
+    @staticmethod
+    def _filter_by_repertoires(repertoire_ids: List[int]):
+        return {
             "filters":{
                 "op": "in",
                 "content": {
@@ -91,13 +130,9 @@ class AIRRRequests:
                     "value": repertoire_ids
                 }
             },
-            "size": 10,
+            "size": 100,
             "from": 0
         }
-
-        airr_request = requests.post(url + "/rearrangement", json=query, headers=header);
-        airr_request.raise_for_status()
-        return airr_request.json()
 
     @staticmethod
     def _build_header(access_token: str = None):

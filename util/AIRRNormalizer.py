@@ -22,6 +22,7 @@ class AIRRNormalizer:
                 repertoire_list[idr].update(sample)
                 repertoires.append(repertoire_list[idr])
 
-        repertoires = pandas.io.json.json_normalize(repertoires)
+        #repertoires = pandas.io.json.json_normalize(repertoires)
+        repertoires = pandas.io.json.json_normalize(repertoire_list)
 
         return repertoires

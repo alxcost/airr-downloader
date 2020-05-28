@@ -1,4 +1,4 @@
-import os, sys, click, pandas
+import os, sys, click, pandas, json
 
 from util.SchemaValidator import SchemaValidator
 from util.AIRRRequests import AIRRRequests
@@ -51,8 +51,8 @@ def main (input_url, output_dir, filter_airr, filter_disease, access_token=None)
         print("The \"/repertoire\" response returned from the API is not AIRR compliant: ", e)
         sys.exit(1)
 
-    df = AIRRNormalizer.normalize_repertoires(response["Repertoire"])
-    df.to_csv(os.path.join(output_dir, "metadata.csv"), sep="\t", index=False)
+    df_repertoires = AIRRNormalizer.normalize_repertoires(response["Repertoire"])
+    df_repertoires["filename"] = None
 
     # Gather ID of the repertoires collected through this request
     repertoire_ids = [r['repertoire_id'] for r in response["Repertoire"]]
@@ -61,11 +61,23 @@ def main (input_url, output_dir, filter_airr, filter_disease, access_token=None)
         print("No repertoires found to specified query")
         sys.exit(1)
 
-    response = AIRRRequests.request_rearrangements_by_repertoire_ids(input_url, repertoire_ids)
+    response = AIRRRequests.stream_rearrangements_by_repertoire_ids(input_url, repertoire_ids)
+    rsvp = ""
+
+    for raw_rsvp in response:
+        rsvp += raw_rsvp
+        print("{0}            ".format(AIRRRequests.sizeof_fmt(len(rsvp))), end="\r" )
+
+    print("Finished fetching {0} of rearrangements".format(AIRRRequests.sizeof_fmt(len(rsvp))))
+
+    if rsvp:
+        response = json.loads(rsvp)
 
     if "Rearrangement" not in response:
         print("No rearragements found for reportoires")
         sys.exit(1)
+
+    rearrangements = {}
 
     try:
         SchemaValidator.is_valid(response, os.path.join(schemas_path, "airr_rearrangements.json"))
@@ -73,9 +85,14 @@ def main (input_url, output_dir, filter_airr, filter_disease, access_token=None)
         print("The \"/rearrangement\" response returned from the API is not AIRR compliant: ", e)
         sys.exit(1)
 
-    for rearrangement in response["Rearrangement"]:
-        df = pandas.DataFrame(response["Rearrangement"])
-        df.to_csv(os.path.join(output_dir, "rearragements_{0}.csv".format(rearrangement["rearrangement_id"])), sep="\t", index=False)
+    df_rearrangements = pandas.DataFrame(response["Rearrangement"])
+    for repertoire_id, df_rearrangement in df_rearrangements.groupby("repertoire_id"):
+        rearragement_output_dir = os.path.join(output_dir, "rearragements_{0}.csv".format(repertoire_id))
+        df_rearrangement.to_csv(rearragement_output_dir, sep="\t", index=False)
+
+        repertoire_row = df_repertoires.loc[df_repertoires['repertoire_id'] == repertoire_id, "filename"] = rearragement_output_dir
+
+    df_repertoires.to_csv(os.path.join(output_dir, "metadata.csv"), sep="\t", index=False)
 
 if __name__ == "__main__":
     main()
