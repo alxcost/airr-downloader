@@ -3,15 +3,17 @@ import os, sys, click, pandas, json
 from util.SchemaValidator import SchemaValidator
 from util.AIRRRequests import AIRRRequests
 from util.AIRRNormalizer import AIRRNormalizer
+from util.TempStorage import TempFile
 
 basedir = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+temp_path = os.path.join(basedir, 'temp')
 schemas_path = os.path.join(basedir, 'schemas')
 
 @click.command()
 @click.option(
     "--input-url", "-i",
     required=True,
-    help='URL of the API endpoint to query for AIRR-seq data.')
+    help='URL of an AIRR compliant API endpoint to query for AIRR-seq data.')
 @click.option(
     "--output-dir", "-o",
     required=True,
@@ -22,22 +24,48 @@ schemas_path = os.path.join(basedir, 'schemas')
     nargs=2,
     default=[],
     type=click.Tuple([str, str]),
-    help="Filter content according to AIRR compliant specified rules. May be called multiple times. Takes 2 arguments: [field to filter for] [value]")
+    help="Filter content according to AIRR compliant specified rules. Takes 2 arguments: [field to filter for] [value]")
+@click.option(
+    "--filter-study", "-fs",
+    multiple=True,
+    nargs=1,
+    default=[],
+    type=str,
+    help="Filter content according to a study ID.")
 @click.option(
     "--filter-disease", "-fd",
     multiple=True,
     nargs=1,
     default=[],
     type=str,
-    help="Filter content according to disease name. May be called multiple times. Takes 1 argument: [value or disease name]")
+    help="Filter content according to disease name.")
+@click.option(
+    "--filter-organism", "-fo",
+    multiple=True,
+    nargs=1,
+    default=[],
+    type=str,
+    help="Filter content by organism.")
+@click.option(
+    "--filter-cell", "-fc",
+    multiple=True,
+    nargs=1,
+    default=[],
+    type=str,
+    help="Filter content according to cell type.")
 @click.option(
     "--access-token", "-a",
-    help="Access Token used to access the endpoint in case of non-public data")
-def main (input_url, output_dir, filter_airr, filter_disease, access_token=None):
+    help="Access Token used to access the endpoint in case of non-public data.")
+def main(input_url, output_dir, filter_airr, filter_study, filter_disease, filter_organism, filter_cell, access_token=None):
+    # Create output directory
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    filter_airr += AIRRNormalizer.normalize_disease_filter(filter_disease)
+    # Create temp directory
+    if not os.path.exists(temp_path):
+        os.makedirs(temp_path)
+
+    filter_airr += AIRRNormalizer.normalize_builtin_filters(filter_study, filter_disease, filter_organism, filter_cell)
 
     response = AIRRRequests.request_repertoires(input_url, filter_airr, access_token)
 
@@ -62,16 +90,16 @@ def main (input_url, output_dir, filter_airr, filter_disease, access_token=None)
         sys.exit(1)
 
     response = AIRRRequests.stream_rearrangements_by_repertoire_ids(input_url, repertoire_ids)
-    rsvp = ""
 
+    f = TempFile(temp_path)
     for raw_rsvp in response:
-        rsvp += raw_rsvp
-        print("{0}            ".format(AIRRRequests.sizeof_fmt(len(rsvp))), end="\r" )
+        f.get().write(raw_rsvp)
+        f.get().flush()
+        print("{0}            ".format(AIRRRequests.sizeof_fmt(f.get().tell())), end="\r" )
 
-    print("Finished fetching {0} of rearrangements".format(AIRRRequests.sizeof_fmt(len(rsvp))))
+    print("Finished fetching {0} of rearrangements".format(AIRRRequests.sizeof_fmt(f.get().tell())))
 
-    if rsvp:
-        response = json.loads(rsvp)
+    response = json.loads(f.read())
 
     if "Rearrangement" not in response:
         print("No rearragements found for reportoires")
@@ -87,7 +115,7 @@ def main (input_url, output_dir, filter_airr, filter_disease, access_token=None)
 
     df_rearrangements = pandas.DataFrame(response["Rearrangement"])
     for repertoire_id, df_rearrangement in df_rearrangements.groupby("repertoire_id"):
-        rearragement_output_dir = os.path.join(output_dir, "rearragements_{0}.csv".format(repertoire_id))
+        rearragement_output_dir = os.path.join(output_dir, "rearragements_{0}.tsv".format(repertoire_id))
         df_rearrangement.to_csv(rearragement_output_dir, sep="\t", index=False)
 
         repertoire_row = df_repertoires.loc[df_repertoires['repertoire_id'] == repertoire_id, "filename"] = rearragement_output_dir

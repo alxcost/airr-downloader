@@ -2,12 +2,22 @@ import pandas
 
 class AIRRNormalizer:
     @staticmethod
-    def normalize_disease_filter(filter_disease):
-        normalized_diseases = []
-        for fd in filter_disease:
-            normalized_diseases.append(("subject.diagnosis.disease_diagnosis.value", fd))
+    def normalize_builtin_filters(filter_study, filter_disease, filter_organism, filter_cell):
+        normalized_filters = []
 
-        return tuple(normalized_diseases)
+        for fs in filter_study:
+            normalized_filters.append(("study.study_id", fs))
+
+        for fd in filter_disease:
+            normalized_filters.append(("subject.diagnosis.disease_diagnosis.value", fd))
+
+        for fo in filter_organism:
+            normalized_filters.append(("subject.organism.value", fo))
+
+        for fc in filter_cell:
+            normalized_filters.append(("sample.pcr_target.pcr_target_locus", fc))
+
+        return tuple(normalized_filters)
 
     @staticmethod
     def normalize_repertoires(repertoire_list):

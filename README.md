@@ -2,7 +2,7 @@
 
 Script collection for downloading and acquiring data from AIRR-compliant repository services, compatible with the iReceptor Plus repositories.
 
-Allows the user to provide a URL to the service in order to output metadata and data into a CSV to a specified directory. The amount of data may be filtered by following the ADC schemas as well as through the default filters implemented in the script (i.e. filter by disease).
+Allows the user to provide a URL to the service in order to output metadata and data into a CSV to a specified directory. The amount of data may be filtered by following the ADC schemas as well as through the default filters implemented in the script (i.e. filter by disease). All filters may be called multiple times to chain filtering conditions.
 
 ## Requirements
 
@@ -27,23 +27,35 @@ The list of Python requirements can be found on `requirements.txt`. Requirements
   -o, --output-dir TEXT        Directory for storing incoming data.
                                [required]
   -f, --filter <TEXT TEXT>...  Filter content according to AIRR compliant
-                               specified rules. May be called multiple times.
-                               Takes 2 arguments: [field to filter for]
-                               [value]
-  -fd, --filter-disease TEXT   Filter content according to disease name. May
-                               be called multiple times. Takes 1 argument:
-                               [value or disease name]
+                               specified rules. Takes 2 arguments: [field to
+                               filter for] [value]
+  -fs, --filter-study TEXT     Filter content according to a study ID.
+  -fd, --filter-disease TEXT   Filter content according to disease name.
+  -fo, --filter-organism TEXT  Filter content by organism.
+  -fc, --filter-cell TEXT      Filter content according to cell type.
   -a, --access-token TEXT      Access Token used to access the endpoint in
-                               case of non-public data
+                               case of non-public data.
 ```
 
 ### Usage examples
 
 #### Built-in Filters
 
+- Filtering by study
+
+`python3 AirrDownloader.py -i <URL> -o <output directory> -fs PRJNA000000`
+
 - Filtering by disease
 
 `python3 AirrDownloader.py -i <URL> -o <output directory> -fd "multiple sclerosis"`
+
+- Filtering by organism
+
+`python3 AirrDownloader.py -i <URL> -o <output directory> -fo "homo sapiens"`
+
+- Filtering by cell-type
+
+`python3 AirrDownloader.py -i <URL> -o <output directory> -fc "IGH"`
 
 #### Filtering by AIRR schemas
 - Filter by Locus 

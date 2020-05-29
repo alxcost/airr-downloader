@@ -108,12 +108,15 @@ class AIRRRequests:
         if airr_request.encoding is None:
             airr_request.encoding = 'utf-8'
 
-        for chunk in airr_request.iter_content(decode_unicode=True, chunk_size=1024 * 16):
+        for chunk in airr_request.iter_content(chunk_size=1024*1024):
             if chunk:
                 yield chunk
 
     @staticmethod
     def sizeof_fmt(num, suffix='B'):
+        if not num:
+            return "NaN"
+
         magnitude = int(math.floor(math.log(num, 1024)))
         val = num / math.pow(1024, magnitude)
         if magnitude > 7:
@@ -129,9 +132,7 @@ class AIRRRequests:
                     "field": "repertoire_id",
                     "value": repertoire_ids
                 }
-            },
-            "size": 100,
-            "from": 0
+            }
         }
 
     @staticmethod
