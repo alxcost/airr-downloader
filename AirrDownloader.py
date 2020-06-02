@@ -67,6 +67,7 @@ def main(input_url, output_dir, filter_airr, filter_study, filter_disease, filte
 
     filter_airr += AIRRNormalizer.normalize_builtin_filters(filter_study, filter_disease, filter_organism, filter_cell)
 
+    print ("Requesting available repertoires")
     response = AIRRRequests.request_repertoires(input_url, filter_airr, access_token)
 
     if "Repertoire" not in response:
@@ -89,6 +90,7 @@ def main(input_url, output_dir, filter_airr, filter_study, filter_disease, filte
         print("No repertoires found to specified query")
         sys.exit(1)
 
+    print("Requesting rearrangements for {0} repertoire(s)".format(len(repertoire_ids)))
     response = AIRRRequests.stream_rearrangements_by_repertoire_ids(input_url, repertoire_ids)
 
     f = TempFile(temp_path)
@@ -102,10 +104,8 @@ def main(input_url, output_dir, filter_airr, filter_study, filter_disease, filte
     response = json.loads(f.read())
 
     if "Rearrangement" not in response:
-        print("No rearragements found for reportoires")
+        print("No rearrangements found for repertoires")
         sys.exit(1)
-
-    rearrangements = {}
 
     try:
         SchemaValidator.is_valid(response, os.path.join(schemas_path, "airr_rearrangements.json"))
