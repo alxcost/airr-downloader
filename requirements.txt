@@ -1,3 +1,4 @@
 requests
-clicks
+click
 pandas
+jsonschema
