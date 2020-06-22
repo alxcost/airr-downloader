@@ -8,8 +8,9 @@ Allows the user to provide a URL to the service in order to output metadata and 
 
 - Python 3
   - requests
-  - clicks
+  - click
   - pandas
+  - jsonschema
 
 The list of Python requirements can be found on `requirements.txt`. Requirements may be installed with a package manager such as PIP by doing: `pip install -r requirements.txt`.
 
