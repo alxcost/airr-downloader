@@ -21,9 +21,9 @@ class AIRRNormalizer:
 
     @staticmethod
     def normalize_repertoires(repertoire_list):
-        samples = pandas.io.json.json_normalize(repertoire_list, record_path="sample")
+        samples = pandas.json_normalize(repertoire_list, record_path="sample")
 
-        data_processing = pandas.io.json.json_normalize(repertoire_list, record_path="data_processing")
+        data_processing = pandas.json_normalize(repertoire_list, record_path="data_processing")
 
         repertoires = []
 
@@ -33,6 +33,6 @@ class AIRRNormalizer:
                 repertoires.append(repertoire_list[idr])
 
         #repertoires = pandas.io.json.json_normalize(repertoires)
-        repertoires = pandas.io.json.json_normalize(repertoire_list)
+        repertoires = pandas.json_normalize(repertoire_list)
 
         return repertoires
